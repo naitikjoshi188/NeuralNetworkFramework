@@ -2,6 +2,8 @@
 # include <iostream>
 # include <cassert>
 
+
+//defining constructors
 Tensor::Tensor(): rows(0),cols(0){}
 
 Tensor::Tensor(int r,int c): rows(r),cols(c),data(r*c,0.0f){}
@@ -10,6 +12,8 @@ Tensor::Tensor(int r,int c,const std::vector<float>& values): rows(r),cols(c),da
     assert(r*c==values.size());
 }
 
+
+//defining transpose
 Tensor Tensor::transpose()const{
     Tensor result(cols,rows);
     for (int i=0;i<rows;i++){
@@ -20,6 +24,8 @@ Tensor Tensor::transpose()const{
     return result;
 }
 
+
+//defining print function
 void Tensor::print()const{
     std::cout<<"["<<rows<<"*"<<cols<<"] tensor:\n";
     for (int i=0;i<rows;i++){
@@ -32,6 +38,8 @@ void Tensor::print()const{
     std::cout<<std::endl;
 }
 
+
+//defining multiply function and safegaurding using assert
 Tensor Tensor::multiply(const Tensor&B)const{
     assert(cols==B.rows);
     Tensor result(rows,B.cols);

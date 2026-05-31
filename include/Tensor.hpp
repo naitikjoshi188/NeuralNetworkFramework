@@ -23,6 +23,7 @@ public:
         return data[r*cols+c];
     }
 
+    //common functions
     Tensor transpose() const;
     void print() const;
 
