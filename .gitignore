@@ -1,0 +1,8 @@
+# Ignore compiled executables and build directories
+build/
+*.out
+*.exe
+*.o
+
+# System files
+.DS_Store
