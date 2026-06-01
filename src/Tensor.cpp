@@ -1,6 +1,7 @@
 # include "Tensor.hpp"
 # include <iostream>
 # include <cassert>
+#include <random>
 
 
 //defining constructors
@@ -52,4 +53,16 @@ Tensor Tensor::multiply(const Tensor&B)const{
         }
     }
     return result;
+}
+
+//defining random initializer
+void Tensor::randomize_normal(float mean, float stddev) {
+    // Using a fixed seed (e.g., 1337) ensures the network behaves identically 
+    // every time we run it.
+    static std::default_random_engine generator(1337);
+    std::normal_distribution<float> distribution(mean, stddev);
+
+    for (int i = 0; i < rows * cols; ++i) {
+        data[i] = distribution(generator);
+    }
 }

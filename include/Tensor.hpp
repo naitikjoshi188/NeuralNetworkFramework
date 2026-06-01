@@ -28,4 +28,6 @@ public:
     void print() const;
 
     Tensor multiply(const Tensor&B) const;
+
+    void randomize_normal(float mean, float stddev);
 };

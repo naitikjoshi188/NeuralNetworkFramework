@@ -10,6 +10,10 @@ public:
     virtual Tensor forward(const Tensor& input)=0;
 
     virtual Tensor backward(const Tensor& output_gradient)=0;
+
+    // Provide default empty parameter arrays for non-parametric layers
+    virtual std::vector<Tensor*> get_parameters() { return {}; }
+    virtual std::vector<Tensor*> get_gradients() { return {}; }
 };
 
 class Network{
@@ -36,4 +40,7 @@ public:
     Tensor forward(Tensor input);
 
     Tensor backward(const Tensor& output_gradient);
+
+    //providing access to layer vector
+    const std::vector<Layer*>& get_layers() const { return layers; }
 };

@@ -11,13 +11,17 @@ private:
     Tensor weights;
     Tensor biases;
     Tensor input_cache;
+    Tensor weight_gradient;
+    Tensor bias_gradient;
 
 public:
     //defining constructor and overloading forward and backword functions
 
-    DenseLayer(int input_dim,int output_dim)
-        : weights(input_dim,output_dim),biases(1,output_dim){}
+    DenseLayer(int input_dim,int output_dim);
 
     Tensor forward(const Tensor& input) override;
     Tensor backward(const Tensor& output_gradient) override;
+
+    std::vector<Tensor*> get_parameters() override;
+    std::vector<Tensor*> get_gradients() override;
 };
