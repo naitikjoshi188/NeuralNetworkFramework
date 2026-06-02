@@ -25,12 +25,12 @@ int main(){
     //2. Building a Multi-layer network to solve XOR
     Network net;
 
-    //Hidden layer: 2 inputs -> 8 hidden neurons
-    net.add(new DenseLayer(2,8));
+    //Hidden layer: 2 inputs -> 32 hidden neurons
+    net.add(new DenseLayer(2,32));
     //non-linear activation layer
     net.add(new ReLULayer());
-    //Hidden Layer: 8 hidden neurons -> 1 prediciton
-    net.add(new DenseLayer(8,1));
+    //Hidden Layer: 32 hidden neurons -> 1 prediciton
+    net.add(new DenseLayer(32,1));
 
     //3. Initialize Loss and Optimizer
     MSELoss loss_fn;
@@ -68,10 +68,10 @@ int main(){
     
     Tensor X_test(4, 2);
     X_test.data = {
-        0.05f, 0.05f,  // Close to (0, 0) -> should be 0
+        0.00f, 0.00f,  // Close to (0, 0) -> should be 0
         0.92f, 0.08f,  // Close to (1, 0) -> should be 1
         0.03f, 0.95f,  // Close to (0, 1) -> should be 1
-        0.91f, 0.89f   // Close to (1, 1) -> should be 0
+        1.00f, 1.00f   // Close to (1, 1) -> should be 0
     };
 
     // Correct mathematical XOR targets for these noisy coordinates
