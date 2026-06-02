@@ -66,11 +66,22 @@ int main(){
     std::cout << "Training complete! Final Predictions:\n";
     std::cout << "========================================\n";
     
-    Tensor final_pred = net.forward(X);
+    Tensor X_test(4, 2);
+    X_test.data = {
+        0.05f, 0.05f,  // Close to (0, 0) -> should be 0
+        0.92f, 0.08f,  // Close to (1, 0) -> should be 1
+        0.03f, 0.95f,  // Close to (0, 1) -> should be 1
+        0.91f, 0.89f   // Close to (1, 1) -> should be 0
+    };
+
+    // Correct mathematical XOR targets for these noisy coordinates
+    std::vector<float> Y_test_targets = {0.0f, 1.0f, 1.0f, 0.0f};
+
+    Tensor test_pred = net.forward(X_test);
     for (int i = 0; i < 4; ++i) {
-        std::cout << "Input: (" << X.data[i * 2] << ", " << X.data[i * 2 + 1] 
-                << ") -> Target: " << Y_true.data[i] 
-                << " | Engine Output: " << final_pred.data[i] << "\n";
+        std::cout << "Input: (" << X_test.data[i * 2] << ", " << X_test.data[i * 2 + 1] 
+                  << ") -> Target: " << Y_test_targets[i] 
+                  << " | Engine Output: " << test_pred.data[i] << "\n";
     }
 
     return 0;
