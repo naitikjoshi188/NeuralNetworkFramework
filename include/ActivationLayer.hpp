@@ -12,3 +12,12 @@ public:
     Tensor forward(const Tensor& input) override;
     Tensor backward(const Tensor& output_gradient) override;
 };
+
+class SoftmaxLayer: public Layer{
+private:
+    Tensor cached_output;
+
+public:
+    Tensor forward(const Tensor& input) override;
+    Tensor backward(const Tensor& output_gradient) override;
+};

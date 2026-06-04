@@ -1,4 +1,6 @@
 # include "ActivationLayer.hpp"
+# include <algorithm>
+# include <cmath>
 
 Tensor ReLULayer::forward(const Tensor& input){
     input_cache = input;
@@ -25,4 +27,42 @@ Tensor ReLULayer::backward(const Tensor& output_gradient){
     }
 
     return input_gradient;
+}
+
+Tensor SoftmaxLayer::forward(const Tensor& input){
+    Tensor result(input.rows,input.cols);
+
+    for (size_t i=0;i<input.rows;i++){
+        float maxi = input(i,0);
+        for (size_t j=1;j<input.cols;j++){
+            maxi = std::max(maxi,input(i,j));
+        }
+        float sum = 0;
+        for (size_t j=0;j<input.cols;j++){
+            result(i,j) = std::exp(input(i,j)-maxi);
+            sum+=result(i,j);
+        }
+        for (size_t j=0;j<input.cols;j++){
+            result(i,j)/=sum;
+        }
+    }
+
+    cached_output = result;
+
+    return result;
+}
+
+Tensor SoftmaxLayer::backward(const Tensor& output_gradient){
+    Tensor grad_input (output_gradient.rows,output_gradient.cols);
+
+    for (size_t i=0;i<output_gradient.rows;i++){
+        float dot_product = 0;
+        for (size_t k=0;k<output_gradient.cols;k++){
+            dot_product+= (output_gradient(i,k)*cached_output(i,k));
+        }
+        for (size_t j=0;j<output_gradient.cols;j++){
+            grad_input(i, j) = cached_output(i, j) * (output_gradient(i, j) - dot_product);
+        }
+    }
+    return grad_input;
 }
