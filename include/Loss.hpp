@@ -18,3 +18,10 @@ public:
 
     Tensor backward(const Tensor& pred,const Tensor& true_vals) override;
 };
+
+class CrossEntropyLoss: public Loss{
+public:
+    float forward(const Tensor& pred,const Tensor& true_vals) override;
+
+    Tensor backward(const Tensor& pred,const Tensor& true_vals) override;
+};
