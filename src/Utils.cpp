@@ -13,6 +13,9 @@ void DataUtils::load_csv(const std::string& filepath,Tensor& X_out,Tensor& Y_out
     std::string line;
 
     while (std::getline(file,line)){
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
         if (line.empty()) continue;
 
         std::stringstream ss(line);
@@ -32,10 +35,10 @@ void DataUtils::load_csv(const std::string& filepath,Tensor& X_out,Tensor& Y_out
             else{
                 feature_row.push_back(val);
             }
+            col_idx++;
         }
         features.push_back(feature_row);
         labels.push_back(label_val);
-        col_idx++;
     }
     Tensor feature_tensor(features.size(),features[0].size());
     Tensor label_tensor(labels.size(),1);
