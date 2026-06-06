@@ -77,3 +77,22 @@ Tensor DataUtils::one_hot_encoder(const Tensor& Y_true,int num_classes){
     }
     return encoded;
 }
+
+Tensor DataUtils::get_batch(const Tensor& source, int batch_idx, int batch_size) {
+    size_t start_row = static_cast<size_t>(batch_idx * batch_size);
+    size_t end_row = std::min(static_cast<int>(start_row + static_cast<size_t>(batch_size)), (source.rows));
+    
+    size_t actual_batch_size = end_row - start_row;
+    
+    // Create a sub-tensor with the exact slice dimensions
+    Tensor batch(actual_batch_size, source.cols);
+    
+    // Copy the matrix data values across row blocks
+    for (size_t i = 0; i < actual_batch_size; ++i) {
+        for (size_t j = 0; j < source.cols; ++j) {
+            batch(i, j) = source(start_row + i, j);
+        }
+    }
+    
+    return batch;
+}
