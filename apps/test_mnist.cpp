@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include "Tensor.hpp"
 #include "Layer.hpp"
 #include "DenseLayer.hpp"
@@ -13,40 +14,18 @@ int main() {
     std::cout << "==================================================\n";
 
     // 1. Setup Data Preprocessing Space
-    Tensor X_train_raw, Y_train_raw;
-    Tensor X_test_raw, Y_test_raw;
+    Tensor X_train, Y_train;
+    Tensor X_test, Y_test;
     
-    // Load Training Dataset
-    std::cout << "Loading MNIST Training Set..." << std::endl;
-    DataUtils::load_csv("data/mnist_train.csv", X_train_raw, Y_train_raw, 0);
+    // Load Training Dataset (Label sits at column index 0)
+    std::cout << "Loading MNIST Training Set [data/mnist_train.csv]..." << std::endl;
+    DataUtils::load_csv("data/mnist_train.csv", X_train, Y_train, 0);
+    std::cout << "» Loaded " << X_train.rows << " training samples.\n\n";
 
     // Load Testing Dataset
-    std::cout << "Loading MNIST Testing Set..." << std::endl;
-    DataUtils::load_csv("data/mnist_test.csv", X_test_raw, Y_test_raw, 0);
-
-    // Slice down to manageable sizes for fast single-threaded CPU processing
-    size_t train_limit = 5000;
-    size_t test_limit = 1000;
-
-    Tensor X_train(train_limit, X_train_raw.cols);
-    Tensor Y_train(train_limit, 1);
-    for(size_t i = 0; i < train_limit; ++i) {
-        Y_train(i, 0) = Y_train_raw(i, 0);
-        for(size_t j = 0; j < X_train_raw.cols; ++j) {
-            X_train(i, j) = X_train_raw(i, j);
-        }
-    }
-
-    Tensor X_test(test_limit, X_test_raw.cols);
-    Tensor Y_test(test_limit, 1);
-    for(size_t i = 0; i < test_limit; ++i) {
-        Y_test(i, 0) = Y_test_raw(i, 0);
-        for(size_t j = 0; j < X_test_raw.cols; ++j) {
-            X_test(i, j) = X_test_raw(i, j);
-        }
-    }
-
-    std::cout << "» Sliced working data to " << X_train.rows << " Train / " << X_test.rows << " Test samples.\n\n";
+    std::cout << "Loading MNIST Testing Set [data/mnist_test.csv]..." << std::endl;
+    DataUtils::load_csv("data/mnist_test.csv", X_test, Y_test, 0);
+    std::cout << "» Loaded " << X_test.rows << " independent testing samples.\n\n";
 
     // Normalize pixel intensity maps (0-255 -> 0.0-1.0)
     std::cout << "Executing feature scaling normalization..." << std::endl;
@@ -71,29 +50,41 @@ int main() {
 
     std::cout << "\nArchitecture loaded. Commencing network optimization...\n";
 
+    // Hyperparameters for Mini-Batching
+    int batch_size = 64; 
+    int total_epochs = 10; // Updates happen multiple times per epoch!
+    int num_batches = std::ceil(static_cast<float>(X_train.rows) / batch_size);
+
+    std::cout << "\nStarting Mini-Batch execution loop..." << std::endl;
+    std::cout << "Total Samples: " << X_train.rows << " | Batch Size: " << batch_size << " | Steps per Epoch: " << num_batches << "\n\n";
+
     // 3. The Core Optimization Loop
-    int total_epochs = 50; 
     for (int epoch = 1; epoch <= total_epochs; ++epoch) {
-        
-        // Forward propagation across the training space
-        Tensor Y_pred = net.forward(X_train);
-        float loss = loss_fn.forward(Y_pred, Y_train_hot);
+        float epoch_loss = 0.0f;
 
-        // Backward propagation & gradient distribution
-        Tensor loss_grad = loss_fn.backward(Y_pred, Y_train_hot);
-        net.backward(loss_grad);
+        for (int b = 0; b < num_batches; ++b) {
+            // Slice out the current mini-batch tensors cleanly using the new tool
+            Tensor X_batch = DataUtils::get_batch(X_train, b, batch_size);
+            Tensor Y_batch = DataUtils::get_batch(Y_train_hot, b, batch_size);
 
-        // Update framework parameters using Adam
-        optimizer.step(net);
+            // Forward Pass on mini-batch step
+            Tensor Y_pred = net.forward(X_batch);
+            epoch_loss += loss_fn.forward(Y_pred, Y_batch);
 
-        if (epoch % 5 == 0 || epoch == 1) {
-            std::cout << "Epoch " << epoch << "/" << total_epochs << " | Training Loss: " << loss << "\n";
+            // Backpropagation & Weight Update per batch step
+            Tensor loss_grad = loss_fn.backward(Y_pred, Y_batch);
+            net.backward(loss_grad);
+            optimizer.step(net);
         }
+
+        // Average loss over all processed steps
+        epoch_loss /= num_batches;
+        std::cout << "Epoch " << epoch << "/" << total_epochs << " | Avg Training Loss: " << epoch_loss << "\n";
     }
 
-    // 4. Run Generalization Testing on Unseen Data
+    // Run Testing Generalization Evaluation on Unseen Test File
     std::cout << "\n==================================================\n";
-    std::cout << "Training Concluded! Evaluating on Independent Test Data...\n";
+    std::cout << "Evaluating Performance on Full Out-of-Sample Test Set...\n";
     std::cout << "==================================================\n";
     
     Tensor test_preds = net.forward(X_test);
@@ -102,7 +93,6 @@ int main() {
     for (size_t i = 0; i < X_test.rows; ++i) {
         int true_digit = static_cast<int>(Y_test(i, 0));
         
-        // Find argmax to locate the network's top guess
         int predicted_digit = 0;
         float max_prob = test_preds(i, 0);
         for (size_t c = 1; c < test_preds.cols; ++c) {
@@ -118,7 +108,7 @@ int main() {
     }
 
     float test_accuracy = (static_cast<float>(correct_test_predictions) / X_test.rows) * 100.0f;
-    std::cout << ">> Final Out-of-Sample Test Accuracy: " << test_accuracy << "%\n";
+    std::cout << ">> Mini-Batched Test Accuracy: " << test_accuracy << "%\n";
 
     return 0;
 }
