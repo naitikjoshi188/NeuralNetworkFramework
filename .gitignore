@@ -6,3 +6,7 @@ build/
 
 # System files
 .DS_Store
+
+# MNIST data files
+data/mnist_train.csv
+data/mnist_test.csv
