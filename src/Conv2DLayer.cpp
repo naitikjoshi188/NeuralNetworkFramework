@@ -15,9 +15,9 @@ Conv2DLayer::Conv2DLayer(size_t in_c,size_t out_c,size_t k_size,size_t s,size_t 
 {}
 
 Tensor4D Conv2DLayer::forward(const Tensor4D& input){
-    int N = input.N,H=input.H,W=input.W;
-    int H_out = H - kernel_size +1;
-    int W_out = W - kernel_size +1;
+    size_t N = input.N,H=input.H,W=input.W;
+    size_t H_out = H - kernel_size +1;
+    size_t W_out = W - kernel_size +1;
 
     Tensor4D output(N,out_channels,H_out,W_out);
 
@@ -44,9 +44,9 @@ Tensor4D Conv2DLayer::forward(const Tensor4D& input){
 }
 
 Tensor4D Conv2DLayer::backward(const Tensor4D& d_output,const Tensor4D& input){
-    int N = input.N,H=input.H,W=input.W,C=input.C;
-    int H_out = H - kernel_size +1;
-    int W_out = W - kernel_size +1;
+    size_t N = input.N,H=input.H,W=input.W,C=input.C;
+    size_t H_out = H - kernel_size +1;
+    size_t W_out = W - kernel_size +1;
 
     Tensor4D d_input(N,in_channels,H,W);
     d_weights.fill_zero();
