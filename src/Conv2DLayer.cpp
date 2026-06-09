@@ -11,10 +11,13 @@ Conv2DLayer::Conv2DLayer(size_t in_c,size_t out_c,size_t k_size,size_t s,size_t 
     d_weights(out_c, in_c,k_size,k_size),
     //sizing bias vectors
     biases(out_c, 0.0f),
-    d_biases(out_c, 0.0f)
+    d_biases(out_c, 0.0f),
+    input_cache(0,0,0,0)
 {}
 
 Tensor4D Conv2DLayer::forward(const Tensor4D& input){
+    input_cache = input;
+    
     size_t N = input.N,H=input.H,W=input.W;
     size_t H_out = H - kernel_size +1;
     size_t W_out = W - kernel_size +1;
@@ -43,8 +46,8 @@ Tensor4D Conv2DLayer::forward(const Tensor4D& input){
     return output;
 }
 
-Tensor4D Conv2DLayer::backward(const Tensor4D& d_output,const Tensor4D& input){
-    size_t N = input.N,H=input.H,W=input.W,C=input.C;
+Tensor4D Conv2DLayer::backward(const Tensor4D& d_output){
+    size_t N = input_cache.N,H=input_cache.H,W=input_cache.W,C=input_cache.C;
     size_t H_out = H - kernel_size +1;
     size_t W_out = W - kernel_size +1;
 
@@ -62,7 +65,7 @@ Tensor4D Conv2DLayer::backward(const Tensor4D& d_output,const Tensor4D& input){
                                 if (c_in == 0 && kh == 0 && kw == 0) 
                                 {d_biases[j] += d_output(i, j, l, m);}
 
-                                d_weights(j, c_in, kh, kw) += d_output(i, j, l, m) * input(i, c_in, l + kh, m + kw);
+                                d_weights(j, c_in, kh, kw) += d_output(i, j, l, m) * input_cache(i, c_in, l + kh, m + kw);
                                 d_input(i, c_in, l + kh, m + kw) += d_output(i, j, l, m) * weights(j, c_in, kh, kw);
                             }
                         }
