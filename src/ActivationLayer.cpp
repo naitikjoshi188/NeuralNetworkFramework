@@ -66,3 +66,29 @@ Tensor SoftmaxLayer::backward(const Tensor& output_gradient){
     }
     return grad_input;
 }
+
+Tensor4D ReLU4DLayer::forward(const Tensor4D& input){
+    input_cache = input;
+
+    Tensor4D output(input.N,input.C,input.H,input.W);
+    size_t total_elements = input.data.size();
+    for (size_t i=0;i<total_elements;i++){
+        if (input.data[i]>0){
+            output.data[i]=input.data[i];
+        }
+    }
+
+    return output;
+}
+
+Tensor4D ReLU4DLayer::backward(const Tensor4D& d_output){
+    Tensor4D d_input(d_output.N,d_output.C,d_output.H,d_output.W);
+
+    for (size_t i=0;i<input_cache.data.size();i++){
+        if (input_cache.data[i]>0){
+            d_input.data[i] = d_output.data[i];
+        }
+    }
+
+    return d_input;
+}
