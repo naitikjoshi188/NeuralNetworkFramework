@@ -4,10 +4,9 @@
 # include <vector>
 
 class Optimizer{
-protected:
-    float lr; // learning rate
-
 public:
+    float lr;
+
     Optimizer(float learning_rate) : lr(learning_rate){};
     virtual ~Optimizer() = default;
 

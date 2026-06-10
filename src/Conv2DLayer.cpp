@@ -1,19 +1,38 @@
 # include "Conv2DLayer.hpp"
+#include <random>
+#include <cmath>
 
-Conv2DLayer::Conv2DLayer(size_t in_c,size_t out_c,size_t k_size,size_t s,size_t p)
+Conv2DLayer::Conv2DLayer(size_t in_c, size_t out_c, size_t k_size, size_t s, size_t p)
 :   in_channels(in_c),
     out_channels(out_c),
     kernel_size(k_size),
     stride(s),
     padding(p),
-    //constructing 4D tensors
-    weights(out_c, in_c,k_size,k_size),
-    d_weights(out_c, in_c,k_size,k_size),
-    //sizing bias vectors
+    // Constructing 4D tensors (initially default or zero-allocated)
+    weights(out_c, in_c, k_size, k_size),
+    d_weights(out_c, in_c, k_size, k_size),
+    // Sizing bias vectors
     biases(out_c, 0.0f),
     d_biases(out_c, 0.0f),
-    input_cache(0,0,0,0)
-{}
+    input_cache(0, 0, 0, 0)
+{
+    // 1. Calculate fan_in for He Initialization 
+    // fan_in = input_channels * kernel_height * kernel_width
+    float fan_in = static_cast<float>(in_c * k_size * k_size);
+    float std_dev = std::sqrt(2.0f / fan_in);
+
+    // 2. Setup standard normal distribution random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<float> dist(0.0f, std_dev);
+
+    // 3. Populate the weights Tensor4D data vector with random values
+    // Accessing your underlying weight data vector directly
+    for (size_t i = 0; i < weights.data.size(); ++i) {
+        weights.data[i] = dist(gen);
+    }
+}
+
 
 Tensor4D Conv2DLayer::forward(const Tensor4D& input){
     input_cache = input;
