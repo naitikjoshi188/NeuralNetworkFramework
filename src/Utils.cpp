@@ -96,3 +96,26 @@ Tensor DataUtils::get_batch(const Tensor& source, int batch_idx, int batch_size)
     
     return batch;
 }
+
+Tensor4D DataUtils::get_spatial_batch(const Tensor& source, int batch_idx, int batch_size, size_t channels, size_t height, size_t width) {
+    size_t start_row = static_cast<size_t>(batch_idx * batch_size);
+    size_t end_row = std::min(static_cast<size_t>(start_row + batch_size), static_cast<size_t>(source.rows));
+    size_t actual_batch_size = end_row - start_row;
+
+    // Instantiate your 4D Tensor matching current mini-batch capacity
+    Tensor4D spatial_batch(actual_batch_size, channels, height, width);
+
+    // Flat size of a single sample's features (e.g., 1 * 28 * 28 = 784)
+    size_t features_per_sample = channels * height * width;
+
+    // Direct memory block assignment
+    for (size_t i = 0; i < actual_batch_size; ++i) {
+        size_t source_row = start_row + i;
+        for (size_t j = 0; j < features_per_sample; ++j) {
+            // Since source matrix is flat features, map directly to the 4D vector
+            spatial_batch.data[i * features_per_sample + j] = source(source_row, j);
+        }
+    }
+
+    return spatial_batch;
+}
